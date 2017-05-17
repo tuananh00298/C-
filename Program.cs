@@ -81,24 +81,47 @@ namespace ConnectMySQl
                                 model.selectUser();
                                 break;
                             case 3:
+                                Console.WriteLine("Nhap id muon sua: ");
+                                string nid = Console.ReadLine();
+                                // Lay ra trong database, kiem tra su ton tai.
+                                User existUser = model.getUserById(nid);
+                                if (existUser == null) {
+                                    Console.WriteLine("Khong ton tai nguoi dung voi id: " + nid);
+                                    break;
+                                }
+                                Console.WriteLine("Ton tai thong tin nguoi dung voi id: " + nid);
+                                Console.WriteLine("Account: " + existUser.Account);
+                                Console.WriteLine("Password: " + existUser.Password);
+                                Console.WriteLine("Phone: " + existUser.Phone);
 
-                                Console.WriteLine("moi ban nhap id can sua");
-                                u.Id = Console.ReadLine();
-                                Console.WriteLine("id ban muon update la: " + u.Id);
-                                Console.WriteLine("moi ban nhap Account moi");
-                                u.Account = Console.ReadLine();
-                                Console.WriteLine("moi ban nhap Password moi");
-                                u.Password = Console.ReadLine();
-                                Console.WriteLine("moi ban nhap Phone moi");
-                                u.Phone = Console.ReadLine();
-                                model.updateUser(u);
-                                Console.WriteLine("insert thanh cong");
+                                User userUpdate = new User();
+                                userUpdate.Id = nid;
+                                Console.WriteLine("Vui long nhap thong tin moi: ");
+                                Console.WriteLine("Account: ");
+                                userUpdate.Account = Console.ReadLine();
+                                Console.WriteLine("Password: ");
+                                userUpdate.Password = Console.ReadLine();
+                                Console.WriteLine("Phone: ");
+                                userUpdate.Phone = Console.ReadLine();
+                                model.conn.Open();
+                                model.updateUser(userUpdate);
+                                Console.WriteLine("Update thanh cong!");
                                 break;
                             case 4:
-
-                                Console.WriteLine(" moi ban nhap id can xoa");
-                                u.Id = Console.ReadLine();
-                                model.deleteUser(u);
+                                Console.WriteLine("Nhap id can xoa: ");
+                                String idx = Console.ReadLine();
+                                User existUser1 = model.getUserById1(idx);
+                                if (existUser1 == null)
+                                {
+                                    Console.WriteLine("Khong ton tai nguoi dung voi id: " + idx);
+                                    break;
+                                }
+                                Console.WriteLine("Ton tai thong tin nguoi dung voi id: " + idx);
+                                Console.WriteLine("Account: " + existUser1.Account);
+                                Console.WriteLine("Password: " + existUser1.Password);
+                                Console.WriteLine("Phone: " + existUser1.Phone);
+                                model.getUserById1(idx);
+                                model.deleteUser(idx);
                                 break;
                             case 5:
                                 Environment.Exit(0);
@@ -116,16 +139,16 @@ namespace ConnectMySQl
             {
                 Console.WriteLine("error: ", ex.Message);
             }
-            Console.Read();
+            Console.ReadLine();
         }
     }
 
     class UserModel
     {
 
-        private MySqlConnection conn;
-        private MySqlCommand commad;
-        private MySqlDataReader reader;
+        public MySqlConnection conn;
+        public MySqlCommand commad;
+        public MySqlDataReader reader;
 
         public UserModel()
         {
@@ -139,6 +162,7 @@ namespace ConnectMySQl
             commad = conn.CreateCommand();
             commad.CommandText = "insert into user (account,password,phone) values('" + u.Account + "','" + u.Password + "','" + u.Phone + "')";
             commad.ExecuteNonQuery();
+            Console.WriteLine("insert thanh cong");
         }
 
         public void selectUser()
@@ -154,17 +178,49 @@ namespace ConnectMySQl
                 Console.WriteLine("phone la: " + reader["phone"]);
             }
         }
-        public void updateUser(User u)
+        public void updateUser(User userUpdate)
         {
             commad = conn.CreateCommand();
-            commad.CommandText = "UPDATE user SET account='" + u.Account + "',password='" + u.Password + "',phone='" + u.Phone + "' WHERE id = '" + u.Id + "'";
+            commad.CommandText = "UPDATE user SET account='" + userUpdate.Account + "',password='" + userUpdate.Password + "',phone='" + userUpdate.Phone + "' WHERE id = '" + userUpdate.Id + "'";
             commad.ExecuteNonQuery();
+            Console.WriteLine("uppdate thanh cong");
         }
-
-        public void deleteUser(User u)
+        public User getUserById(String nid)
         {
             commad = conn.CreateCommand();
-            commad.CommandText = "DELETE FROM user WHERE id = '" + u.Id + "' ";
+            commad.CommandText = "SELECT * FROM user WHERE id = '" + nid + "'";
+            MySqlDataReader reader = commad.ExecuteReader();
+            User u = null;
+            if (reader.Read())
+            {
+                u = new User();
+                u.Account = Convert.ToString(reader["account"]);
+                u.Password = Convert.ToString(reader["password"]);
+                u.Phone = Convert.ToString(reader["phone"]);
+            }            
+            conn.Close();
+            return u;
+        }
+        public User getUserById1(String idx)
+        {
+            commad = conn.CreateCommand();
+            commad.CommandText = "SELECT * FROM user WHERE id = '" + idx + "'";
+            MySqlDataReader reader = commad.ExecuteReader();
+            User u = null;
+            if (reader.Read())
+            {
+                u = new User();
+                u.Account = Convert.ToString(reader["account"]);
+                u.Password = Convert.ToString(reader["password"]);
+                u.Phone = Convert.ToString(reader["phone"]);
+            }
+            conn.Close();
+            return u;
+        }
+        public void deleteUser(String idx)
+        {
+            commad = conn.CreateCommand();
+            commad.CommandText = "DELETE FROM user WHERE id = '" + idx + "' ";
             commad.ExecuteNonQuery();
         }
     }
